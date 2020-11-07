@@ -16,5 +16,10 @@ import nltk
 
 # Import data
 pres_market = pd.read_csv("./data/PRES00_WTA.csv")
+AAMRQ = pd.read_csv("./data/AAMRQ.csv")
+AAPL = pd.read_csv("./data/AAPL.csv")
 
 #
+print(pres_market)
+print(AAMRQ)
+print(AAPL)
