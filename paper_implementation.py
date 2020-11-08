@@ -20,6 +20,3 @@ AAMRQ = pd.read_csv("./data/AAMRQ.csv")
 AAPL = pd.read_csv("./data/AAPL.csv")
 
 #
-print(pres_market)
-print(AAMRQ)
-print(AAPL)
