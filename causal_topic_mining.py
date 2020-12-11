@@ -9,7 +9,6 @@ This program implements the following paper:
 """
 import os
 import numpy as np
-import cupy as cp
 import pandas as pd
 import statsmodels.api as sm
 from statsmodels.tsa.stattools import grangercausalitytests
@@ -63,7 +62,7 @@ class ITMTF(object):
 
         row_sums = input_matrix.sum(axis=1)
         try:
-            assert (cp.count_nonzero(row_sums)==cp.shape(row_sums)[0]) # no row should sum to zero
+            assert (np.count_nonzero(row_sums)==np.shape(row_sums)[0]) # no row should sum to zero
         except Exception:
             raise Exception("Error while normalizing. Row(s) sum to zero")
         new_matrix = input_matrix / row_sums[:, np.newaxis]
@@ -121,7 +120,7 @@ class ITMTF(object):
 
         self.term_doc_matrix[i][j] is the count of term j in document i
         """
-        self.term_doc_matrix = cp.zeros((self.number_of_documents, self.vocabulary_size))
+        self.term_doc_matrix = np.zeros((self.number_of_documents, self.vocabulary_size))
         for i, document in enumerate(self.documents):
             for j, word in enumerate(self.vocabulary):
                 self.term_doc_matrix[i][j] = document.count(word)
@@ -131,26 +130,26 @@ class ITMTF(object):
         Randomly initialize the matrices: document_topic_prob and topic_word_prob
         which hold the probability distributions for P(z | d) and P(w | z): self.document_topic_prob, and self.topic_word_prob
         """
-        self.document_topic_prob = cp.random.random_sample((self.number_of_documents, number_of_topics))
+        self.document_topic_prob = np.random.random_sample((self.number_of_documents, number_of_topics))
         self.document_topic_prob = self.normalize(self.document_topic_prob) # P(z | d)
 
-        self.topic_word_prob = cp.random.random_sample((number_of_topics, len(self.vocabulary)))
+        self.topic_word_prob = np.random.random_sample((number_of_topics, len(self.vocabulary)))
         self.topic_word_prob = self.normalize(self.topic_word_prob) # P(w | z)
 
-        self.topic_prior = cp.zeros(self.topic_word_prob.shape)
+        self.topic_prior = np.zeros(self.topic_word_prob.shape)
 
     def initialize_uniformly(self, number_of_topics):
         """
         Initializes the matrices: self.document_topic_prob and self.topic_word_prob with a uniform
         probability distribution. This is used for testing purposes.
         """
-        self.document_topic_prob = cp.ones((self.number_of_documents, number_of_topics))
+        self.document_topic_prob = np.ones((self.number_of_documents, number_of_topics))
         self.document_topic_prob = self.normalize(self.document_topic_prob) # P(z | d)
 
-        self.topic_word_prob = cp.ones((number_of_topics, len(self.vocabulary)))
+        self.topic_word_prob = np.ones((number_of_topics, len(self.vocabulary)))
         self.topic_word_prob = self.normalize(self.topic_word_prob) # P(w | z)
 
-        self.topic_prior = cp.zeros(self.topic_word_prob.shape)
+        self.topic_prior = np.zeros(self.topic_word_prob.shape)
 
     def initialize(self, number_of_topics, random=False):
         """ Call the functions to initialize the matrices document_topic_prob and topic_word_prob
@@ -164,23 +163,23 @@ class ITMTF(object):
         """ The E-step updates P(z | w, d)
         """
         for i in range(self.topic_prob.shape[1]):
-            self.topic_prob[:, i, :] =  cp.outer(self.document_topic_prob[:, i], self.topic_word_prob[i, :])
-            self.topic_prob[:, i, :] /= cp.matmul(self.document_topic_prob, self.topic_word_prob)
+            self.topic_prob[:, i, :] =  np.outer(self.document_topic_prob[:, i], self.topic_word_prob[i, :])
+            self.topic_prob[:, i, :] /= np.matmul(self.document_topic_prob, self.topic_word_prob)
 
     def maximization_step(self, number_of_topics):
         """ The M-step updates P(w | z) and P(z | d)
         """
         # update P(w | z)
         for i in range(number_of_topics):
-            numerator = cp.diag(cp.matmul(cp.transpose(self.term_doc_matrix), self.topic_prob[:, i, :]))
-            denominator = cp.sum(numerator)
+            numerator = np.diag(np.matmul(np.transpose(self.term_doc_matrix), self.topic_prob[:, i, :]))
+            denominator = np.sum(numerator)
             self.topic_word_prob[i, :] = (self.mu * self.topic_prior[i, :] + numerator) / (self.mu + denominator)
 
         # update P(z | d)
         for i in range(number_of_topics):
-            self.document_topic_prob[:, i] = cp.diag(cp.matmul(self.term_doc_matrix,
-                                                               cp.transpose(self.topic_prob[:, i, :])))
-        self.document_topic_prob /= cp.sum(self.document_topic_prob, axis = 1)[:, None]
+            self.document_topic_prob[:, i] = np.diag(np.matmul(self.term_doc_matrix,
+                                                               np.transpose(self.topic_prob[:, i, :])))
+        self.document_topic_prob /= np.sum(self.document_topic_prob, axis = 1)[:, None]
 
     def calculate_likelihood(self, number_of_topics):
         """ Calculate the current log-likelihood of the model using
@@ -188,8 +187,8 @@ class ITMTF(object):
 
         Append the calculated log-likelihood to self.likelihoods
         """
-        self.likelihoods.append(cp.sum(cp.multiply(self.term_doc_matrix,
-                                                   cp.log(cp.matmul(self.document_topic_prob, self.topic_word_prob)))))
+        self.likelihoods.append(np.sum(np.multiply(self.term_doc_matrix,
+                                                   np.log(np.matmul(self.document_topic_prob, self.topic_word_prob)))))
         return self.likelihoods[-1]
 
     def process(self, number_of_topics, max_plsa_iter, epsilon, mu, itmtf_iter):
@@ -203,7 +202,7 @@ class ITMTF(object):
         # Create the counter arrays.
 
         # P(z | d, w)
-        self.topic_prob = cp.zeros([self.number_of_documents, number_of_topics, self.vocabulary_size], dtype=np.float)
+        self.topic_prob = np.zeros([self.number_of_documents, number_of_topics, self.vocabulary_size], dtype=np.float)
 
         # P(z | d) P(w | z)
         self.initialize(number_of_topics, random=True)
@@ -216,7 +215,7 @@ class ITMTF(object):
             self.maximization_step(number_of_topics)
             previous_likelihood = current_likelihood
             current_likelihood = self.calculate_likelihood(number_of_topics)
-            if cp.abs(current_likelihood - previous_likelihood) < epsilon:
+            if np.abs(current_likelihood - previous_likelihood) < epsilon:
                 break
         for iteration in tqdm(range(itmtf_iter), desc="ITMTF Loop"):
             self.mu = mu
@@ -228,7 +227,7 @@ class ITMTF(object):
                 self.maximization_step(number_of_topics)
                 previous_likelihood = current_likelihood
                 current_likelihood = self.calculate_likelihood(number_of_topics)
-                if cp.abs(current_likelihood - previous_likelihood) < epsilon:
+                if np.abs(current_likelihood - previous_likelihood) < epsilon:
                     break
             self.metrics()
 
@@ -239,13 +238,13 @@ class ITMTF(object):
         for i in range(1, lag + 1):
             numerator += results.params[
                 results.params.columns.values[0]]['L' + str(i) + '.' + results.params.columns.values[1]]
-        return numerator / cp.abs(lag)
+        return numerator / np.abs(lag)
 
     def build_TS(self):
-        ts_data = cp.zeros((len(pd.unique(pd.Series(self.doc_timestamps))), self.document_topic_prob.shape[1]))
+        ts_data = np.zeros((len(pd.unique(pd.Series(self.doc_timestamps))), self.document_topic_prob.shape[1]))
         for k, timestamp in enumerate(pd.unique(pd.Series(self.doc_timestamps))):
             doc_i = pd.Series(self.doc_timestamps)[pd.Series(self.doc_timestamps) == timestamp].index.values
-            ts_data[k] = cp.sum(self.document_topic_prob[doc_i], axis=0)
+            ts_data[k] = np.sum(self.document_topic_prob[doc_i], axis=0)
         ts = pd.DataFrame(ts_data, index=pd.to_datetime(pd.unique(pd.Series(self.doc_timestamps))))
         return ts
 
@@ -258,8 +257,8 @@ class ITMTF(object):
             sig_cxt = []
             for i in range(1, len(gc_res) + 1):
                 sig_cxt.append(1 - gc_res[i][0]['params_ftest'][1])
-            if cp.max(sig_cxt) > self.sig_cutoff:
-                self.ct.append((topic_i, sig_cxt.index(cp.max(sig_cxt)) + 1))
+            if np.max(sig_cxt) > self.sig_cutoff:
+                self.ct.append((topic_i, sig_cxt.index(np.max(sig_cxt)) + 1))
         return
 
     def top_words(self, topic):
@@ -296,15 +295,15 @@ class ITMTF(object):
                 sig_cxw = []
                 for i in range(1, len(gc_res) + 1):
                     sig_cxw.append(1 - gc_res[i][0]['params_ftest'][1])
-                if cp.max(sig_cxw) > self.sig_cutoff:
+                if np.max(sig_cxw) > self.sig_cutoff:
                     topic_list.append(causal_topic)
                     word_list.append(word)
-                    iv_list.append(self.impact_value(input_df, sig_cxw.index(cp.max(sig_cxw)) + 1))
-                    sig_list.append(cp.max(sig_cxw))
+                    iv_list.append(self.impact_value(input_df, sig_cxw.index(np.max(sig_cxw)) + 1))
+                    sig_list.append(np.max(sig_cxw))
         return pd.DataFrame({"Topic": topic_list, "Word": word_list, "Impact_Value": iv_list, "Significance": sig_list})
 
     def generate_topic_prior(self, wc):
-        self.topic_prior = cp.zeros(self.topic_word_prob.shape)
+        self.topic_prior = np.zeros(self.topic_word_prob.shape)
         topic_iter = 0
         for topic in wc["Topic"].unique():
             pos_rows = len(wc[wc["Topic"] == topic][wc["Impact_Value"] >= 0])
@@ -361,10 +360,10 @@ class ITMTF(object):
                 sig_cxw = []
                 for i in range(1, len(gc_res) + 1):
                     sig_cxw.append(1 - gc_res[i][0]['params_ftest'][1])
-                if cp.max(sig_cxw) > self.sig_cutoff:
+                if np.max(sig_cxw) > self.sig_cutoff:
                     topic_list.append(topic_index)
                     word_list.append(word)
-                    iv_list.append(self.impact_value(input_df, sig_cxw.index(cp.max(sig_cxw)) + 1))
+                    iv_list.append(self.impact_value(input_df, sig_cxw.index(np.max(sig_cxw)) + 1))
         return pd.DataFrame({"Topic": topic_list, "Word": word_list, "Impact_Value": iv_list})
 
     def metrics(self):
@@ -376,10 +375,10 @@ class ITMTF(object):
             neg_rows = len(wc[wc["Topic"] == topic][wc["Impact_Value"] < 0])
             p_prob = pos_rows / (pos_rows + neg_rows)
             n_prob = neg_rows / (pos_rows + neg_rows)
-            entropies.append(p_prob * cp.log(p_prob) + n_prob * cp.log(n_prob))
-            topic_purities.append(100 + 100 * (p_prob * cp.log(p_prob) + n_prob * cp.log(n_prob)))
-        self.average_entropy.append(cp.mean(entropies))
-        self.average_topic_purity.append(cp.mean(topic_purities))
+            entropies.append(p_prob * np.log(p_prob) + n_prob * np.log(n_prob))
+            topic_purities.append(100 + 100 * (p_prob * np.log(p_prob) + n_prob * np.log(n_prob)))
+        self.average_entropy.append(np.mean(entropies))
+        self.average_topic_purity.append(np.mean(topic_purities))
         ts = self.build_TS()
         sig_cxt_maximums = []
         for topic_i in range(self.document_topic_prob.shape[1]):
@@ -388,6 +387,6 @@ class ITMTF(object):
             sig_cxt = []
             for i in range(1, len(gc_res) + 1):
                 sig_cxt.append(1 - gc_res[i][0]['params_ftest'][1])
-            sig_cxt_maximums.append(cp.max(sig_cxt))
-        self.average_causality_confidence.append(cp.mean(sig_cxt_maximums))
+            sig_cxt_maximums.append(np.max(sig_cxt))
+        self.average_causality_confidence.append(np.mean(sig_cxt_maximums))
         return
