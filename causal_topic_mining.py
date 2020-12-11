@@ -244,7 +244,7 @@ class ITMTF(object):
     def build_TS(self):
         ts_data = cp.zeros((len(pd.unique(pd.Series(self.doc_timestamps))), self.document_topic_prob.shape[1]))
         for k, timestamp in enumerate(pd.unique(pd.Series(self.doc_timestamps))):
-            doc_i = pd.Series(self.doc_timestamps)[pd.Series(self.doc_timestamps) == timestamp].index
+            doc_i = pd.Series(self.doc_timestamps)[pd.Series(self.doc_timestamps) == timestamp].index.values
             ts_data[k] = cp.sum(self.document_topic_prob[doc_i], axis=0)
         ts = pd.DataFrame(ts_data, index=pd.to_datetime(pd.unique(pd.Series(self.doc_timestamps))))
         return ts
