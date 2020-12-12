@@ -252,7 +252,10 @@ class ITMTF(object):
         ts = self.build_TS()
         self.ct = []
         for topic_i in range(self.document_topic_prob.shape[1]):
-            input_df = pd.concat([ts[topic_i], self.time_series], axis=1, join="inner").sort_index()
+            text_series = ts[topic_i]
+            text_series = text_series.rolling(3, center=True, min_periods=2).mean()
+            text_series = text_series.diff()[1:]
+            input_df = pd.concat([text_series, self.time_series], axis=1, join="inner").sort_index()
             gc_res = grangercausalitytests(input_df, maxlag=self.lag, verbose=False)
             sig_cxt = []
             for i in range(1, len(gc_res) + 1):
@@ -290,7 +293,10 @@ class ITMTF(object):
             tw = self.top_words(causal_topic)
             ws = self.build_WS(tw)
             for word in tw:
-                input_df = pd.concat([ws[word], self.time_series], axis=1, join="inner").sort_index()
+                word_series = ws[word]
+                word_series = word_series.rolling(3, center=True, min_periods=2).mean()
+                word_series = word_series.diff()[1:]
+                input_df = pd.concat([word_series, self.time_series], axis=1, join="inner").sort_index()
                 gc_res = grangercausalitytests(input_df, maxlag=self.lag, verbose=False)
                 sig_cxw = []
                 for i in range(1, len(gc_res) + 1):
@@ -355,7 +361,10 @@ class ITMTF(object):
             tw = self.top_words(topic_index)
             ws = self.build_WS(tw)
             for word in tw:
-                input_df = pd.concat([ws[word], self.time_series], axis=1, join="inner").sort_index()
+                word_series = ws[word]
+                word_series = word_series.rolling(3, center=True, min_periods=2).mean()
+                word_series = word_series.diff()[1:]
+                input_df = pd.concat([word_series, self.time_series], axis=1, join="inner").sort_index()
                 gc_res = grangercausalitytests(input_df, maxlag=self.lag, verbose=False)
                 sig_cxw = []
                 for i in range(1, len(gc_res) + 1):
@@ -382,7 +391,10 @@ class ITMTF(object):
         ts = self.build_TS()
         sig_cxt_maximums = []
         for topic_i in range(self.document_topic_prob.shape[1]):
-            input_df = pd.concat([ts[topic_i], self.time_series], axis=1, join="inner").sort_index()
+            text_series = ts[topic_i]
+            text_series = text_series.rolling(3, center=True, min_periods=2).mean()
+            text_series = text_series.diff()[1:]
+            input_df = pd.concat([text_series, self.time_series], axis=1, join="inner").sort_index()
             gc_res = grangercausalitytests(input_df, maxlag=self.lag, verbose=False)
             sig_cxt = []
             for i in range(1, len(gc_res) + 1):
