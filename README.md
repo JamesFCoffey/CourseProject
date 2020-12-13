@@ -102,6 +102,9 @@ The path is to the text corpus of text files named YYYY-MM-DD.txt (YYYY = 4 digi
 #### Run ITMTF algorithm
 `itmtf.process(number_of_topics = 30, max_plsa_iter = 1, epsilon = 0.001, mu = 1000, itmtf_iter = 5)`
 
+#### Access the results by calling the class object parameters desired
+`itmtf.average_topic_purity` for example.
+
 ## Team Contributions
 - James Coffey (Captain)
   - Wrote `Proposal.pdf`
