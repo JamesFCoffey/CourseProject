@@ -79,10 +79,28 @@ The module uses `Python 3.7` and requires the following libraries:
 - `normalise`
 - `tqdm`
 
+`demonstration_notebook.ipynb` requires the additional library:
+- `matplotlib`
+
 ### Demonstration
 A demonstration of the use of the class `ITMTF` is given in the Jupyter notebook `demonstration_notebook.ipynb`.
 
-Import the module with `from causal_topic_mining.py import ITMTF`.
+#### Import the module.
+`from causal_topic_mining import ITMTF`
+
+#### Create an object from ITMTF class
+`itmtf = ITMTF(documents_path, time_series)`
+
+The path is to the text corpus of text files named YYYY-MM-DD.txt (YYYY = 4 digit year, MM = 2 digit month, DD = 2 digit day) and each line in the text file is a separate document. The time series is a Pandas series where the indicies are the dates in pd.dateime format and the time series is a stationary series.
+
+#### Tokenize the text corpus and record document timestamps
+`itmtf.build_corpus()`
+
+#### Build vocabulary
+`itmtf.build_vocabulary()`
+
+#### Run ITMTF algorithm
+`itmtf.process(number_of_topics = 30, max_plsa_iter = 1, epsilon = 0.001, mu = 1000, itmtf_iter = 5)`
 
 ## Team Contributions
 - James Coffey (Captain)
@@ -90,9 +108,8 @@ Import the module with `from causal_topic_mining.py import ITMTF`.
   - Wrote `Progress Report.pdf`
   - Wrote `causal_topic_mining.py`
   - Wrote `demonstration_notebook.ipynb`
-  - Wrote half of `README.md` documentation
+  - Wrote `README.md` documentation
   - Gave tutorial presentation
 - Praveen Bhushan
-  - Wrote half of `README.md` documentation
   - Wrote tutorial presentation
   - Gave tutorial presentation
