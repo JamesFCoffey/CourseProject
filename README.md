@@ -1,7 +1,7 @@
 # CS 410: Text Information Systems Course Project
 # Documentation
 
-## Tutorial presentation video link
+## Tutorial presentation video
 ### Microsoft Hosting
 https://web.microsoftstream.com/video/625f5bff-8451-45b6-881b-207b9590da96
 
