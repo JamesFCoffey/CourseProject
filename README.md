@@ -2,7 +2,11 @@
 # Documentation
 
 ## Tutorial presentation video link
+### Microsoft Hosting
 https://web.microsoftstream.com/video/625f5bff-8451-45b6-881b-207b9590da96
+
+### YouTube Hosting
+https://youtu.be/DQfXFzNvuAc
 
 ## Overview of the function of the code
 This code implements the following paper:
