@@ -1,6 +1,9 @@
 # CS 410: Text Information Systems Course Project
 # Documentation
 
+## Tutorial presentation video link
+https://web.microsoftstream.com/video/625f5bff-8451-45b6-881b-207b9590da96
+
 ## Overview of the function of the code
 This code implements the following paper:
 > Hyun Duk Kim, Malu Castellanos, Meichun Hsu, ChengXiang Zhai, Thomas Rietz, and Daniel Diermeier. 2013. Mining causal topics in text data: Iterative topic modeling with time series feedback. In Proceedings of the 22nd ACM international conference on information & knowledge management (CIKM 2013). ACM, New York, NY, USA, 885-890. DOI=10.1145/2505515.2505612
@@ -114,5 +117,4 @@ The path is to the text corpus of text files named YYYY-MM-DD.txt (YYYY = 4 digi
   - Wrote `README.md` documentation
   - Gave tutorial presentation
 - Praveen Bhushan
-  - Wrote tutorial presentation
   - Gave tutorial presentation
